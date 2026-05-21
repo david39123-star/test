@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>API Тестер</title>
+    <title> API Тестер </title>
     <!-- Подключаем Яндекс.Карты API -->
     <script src="https://api-maps.yandex.ru/2.1/?apikey=ваш_api_ключ&lang=ru_RU" type="text/javascript"></script>
     <style>
@@ -163,12 +163,15 @@
         .info-panel p {
             margin: 8px 0;
             font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .coord {
             font-family: monospace;
             font-weight: bold;
-            color: #667ea;
+            color: #667eea;
         }
 
         .status-badge {
@@ -183,6 +186,32 @@
         .status-offline { background: #ef4444; color: white; }
         .status-unknown { background: #6b7280; color: white; }
         .status-loading { background: #f59e0b; color: white; }
+
+        .ignition-on {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+            background: #ef4444;
+            color: white;
+        }
+
+        .ignition-off {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+            background: #6b7280;
+            color: white;
+        }
+
+        .fuel-level {
+            font-weight: bold;
+            font-size: 16px;
+            color: #667eea;
+        }
 
         /* Карточка карты */
         .map-card {
@@ -407,10 +436,12 @@
                 <div class="info-panel" id="infoPanel">
                     <p>📌 <strong>Информация о ТС</strong></p>
                     <p>Статус связи: <span id="infoStatus" class="status-badge status-unknown">Ожидание</span></p>
-                    <p>Координаты: <span id="infoCoords" class="coord">—</span></p>
+                    <p>📍 Координаты: <span id="infoCoords" class="coord">—</span></p>
                     <p>🕐 Время отбития: <span id="infoTime">—</span></p>
-                    <p>Скорость: <span id="infoSpeed">—</span> км/ч</p>
-                    <p>Период поиска: <span id="infoPeriod">—</span></p>
+                    <p>⛽ ДУТ (топливо): <span id="infoFuel" class="fuel-level">—</span> л</p>
+                    <p>🔌 Зажигание: <span id="infoIgnition">—</span></p>
+                    <p>🚗 Скорость: <span id="infoSpeed">—</span> км/ч</p>
+                    <p>📡 Период поиска: <span id="infoPeriod">—</span></p>
                 </div>
             </div>
 
@@ -574,7 +605,7 @@
             return headers;
         }
 
-        // Форматирование даты (поддержка deviceTime с часовым поясом)
+        // Форматирование даты
         function formatDateTime(dateString) {
             if (!dateString) return '—';
             const date = new Date(dateString);
@@ -621,13 +652,10 @@
 
         // Извлечение координат
         function extractCoordinates(position) {
-            let lat = position.lat || position.latitude;
-            let lng = position.lng || position.longitude || position.lon;
-            if (position.location) {
-                lat = lat || position.location.lat || position.location.latitude;
-                lng = lng || position.location.lng || position.location.longitude || position.location.lon;
-            }
-            return { lat, lng };
+            return { 
+                lat: position.latitude || position.lat, 
+                lng: position.longitude || position.lng || position.lon 
+            };
         }
 
         // Извлечение времени (приоритет у deviceTime)
@@ -639,7 +667,53 @@
             return position.speed || position.spd || position.gpsSpeed || 0;
         }
 
-        // Обновление карты
+        // Извлечение уровня топлива из sensorsAttributes.ДУТ
+        function extractFuel(position) {
+            if (position.sensorsAttributes && position.sensorsAttributes.ДУТ !== undefined) {
+                const fuelValue = position.sensorsAttributes.ДУТ;
+                return Math.round(Number(fuelValue));
+            }
+            // Резервные варианты
+            if (position.sensorsAttributes && position.sensorsAttributes.fuelLevel !== undefined) {
+                return Math.round(Number(position.sensorsAttributes.fuelLevel));
+            }
+            if (position.fuelLevel !== undefined) {
+                return Math.round(Number(position.fuelLevel));
+            }
+            return null;
+        }
+
+        // Извлечение состояния зажигания из sensorsAttributes.Зажигание
+        function extractIgnition(position) {
+            if (position.sensorsAttributes && position.sensorsAttributes.Зажигание !== undefined) {
+                const ignitionValue = position.sensorsAttributes.Зажигание;
+                if (ignitionValue === true || ignitionValue === 1 || ignitionValue === '1' || ignitionValue === 'on' || ignitionValue === 'ON' || ignitionValue === 'true') {
+                    return 'Вкл';
+                } else {
+                    return 'Выкл';
+                }
+            }
+            // Резервные варианты
+            if (position.sensorsAttributes && position.sensorsAttributes.ignition !== undefined) {
+                const ignitionValue = position.sensorsAttributes.ignition;
+                if (ignitionValue === true || ignitionValue === 1 || ignitionValue === '1' || ignitionValue === 'on' || ignitionValue === 'ON' || ignitionValue === 'true') {
+                    return 'Вкл';
+                } else {
+                    return 'Выкл';
+                }
+            }
+            if (position.ignition !== undefined) {
+                const ignitionValue = position.ignition;
+                if (ignitionValue === true || ignitionValue === 1 || ignitionValue === '1' || ignitionValue === 'on' || ignitionValue === 'ON' || ignitionValue === 'true') {
+                    return 'Вкл';
+                } else {
+                    return 'Выкл';
+                }
+            }
+            return null;
+        }
+
+        // Обновление карты и информации
         function updateMapAndInfo(lat, lng, position, periodText) {
             if (placemark) {
                 map.geoObjects.remove(placemark);
@@ -647,16 +721,34 @@
             
             const deviceTime = extractTime(position);
             const formattedTime = formatDateTime(deviceTime);
+            const fuel = extractFuel(position);
+            const ignition = extractIgnition(position);
+            const speed = extractSpeed(position);
+            
+            // Формируем HTML для всплывающего окна на карте
+            let balloonHtml = `
+                <b>🚛 ТС ID: ${document.getElementById('posDeviceId').value}</b><br>
+                📍 Координаты: ${lat.toFixed(6)}, ${lng.toFixed(6)}<br>
+                🚗 Скорость: ${speed} км/ч<br>
+                🕐 Время: ${formattedTime}<br>
+            `;
+            
+            if (fuel !== null) {
+                balloonHtml += `⛽ Топливо: ${fuel} л<br>`;
+            }
+            
+            if (ignition !== null) {
+                const ignitionIcon = ignition === 'Вкл' ? '🟢' : '⚫';
+                balloonHtml += `🔌 Зажигание: ${ignitionIcon} ${ignition}<br>`;
+            }
+            
+            balloonHtml += `📡 Период: ${periodText}`;
             
             const coords = [lat, lng];
             placemark = new ymaps.Placemark(coords, {
-                balloonContentHeader: `🚛 ТС ID: ${document.getElementById('posDeviceId').value}`,
-                balloonContentBody: `
-                    📍 Координаты: ${lat.toFixed(6)}, ${lng.toFixed(6)}<br>
-                    🚗 Скорость: ${extractSpeed(position)} км/ч<br>
-                    🕐 Время отбития: ${formattedTime}
-                `,
-                balloonContentFooter: `📡 Период поиска: ${periodText}`
+                balloonContentHeader: `📍 Местоположение ТС`,
+                balloonContentBody: balloonHtml,
+                balloonContentFooter: `🗺️ Яндекс.Карты`
             }, {
                 preset: 'islands#redTransportIcon',
                 openBalloonOnClick: true
@@ -666,11 +758,29 @@
             map.setCenter(coords, 14);
             placemark.balloon.open();
             
+            // Обновляем информационную панель
             document.getElementById('infoStatus').className = 'status-badge status-online';
             document.getElementById('infoStatus').innerHTML = '✅ На связи';
             document.getElementById('infoCoords').innerHTML = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
             document.getElementById('infoTime').innerHTML = formattedTime;
-            document.getElementById('infoSpeed').innerHTML = extractSpeed(position);
+            
+            // Топливо
+            if (fuel !== null) {
+                document.getElementById('infoFuel').innerHTML = `${fuel}`;
+                document.getElementById('infoFuel').className = 'fuel-level';
+            } else {
+                document.getElementById('infoFuel').innerHTML = '—';
+                document.getElementById('infoFuel').className = '';
+            }
+            
+            // Зажигание
+            if (ignition !== null) {
+                document.getElementById('infoIgnition').innerHTML = `<span class="${ignition === 'Вкл' ? 'ignition-on' : 'ignition-off'}">${ignition}</span>`;
+            } else {
+                document.getElementById('infoIgnition').innerHTML = '—';
+            }
+            
+            document.getElementById('infoSpeed').innerHTML = speed;
             document.getElementById('infoPeriod').innerHTML = periodText;
         }
 
@@ -679,6 +789,8 @@
             document.getElementById('infoStatus').innerHTML = '❌ Нет данных';
             document.getElementById('infoCoords').innerHTML = '—';
             document.getElementById('infoTime').innerHTML = message;
+            document.getElementById('infoFuel').innerHTML = '—';
+            document.getElementById('infoIgnition').innerHTML = '—';
             document.getElementById('infoSpeed').innerHTML = '—';
             document.getElementById('infoPeriod').innerHTML = periodText;
         }
@@ -739,7 +851,6 @@
                         statusDiv.className = 'status success';
                         statusDiv.textContent = `✅ Данных за 24 часа нет. Найдена позиция за ${periodText}`;
                         contentDiv.textContent = JSON.stringify(lastPosition, null, 2);
-                        // Добавляем пометку что данные старые
                         const oldTimeNote = document.getElementById('infoTime').innerHTML;
                         document.getElementById('infoTime').innerHTML = `${oldTimeNote} (⚠️ старые данные)`;
                         return;
