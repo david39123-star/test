@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Тестер - с авторизацией</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .subtitle {
+            color: rgba(255,255,255,0.9);
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 0.9rem;
+        }
+
+        /* Панель авторизации */
+        .auth-panel {
+            background: rgba(255,255,255,0.95);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .auth-panel h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .auth-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: flex-end;
+        }
+
+        .auth-group {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .auth-group label {
+            display: block;
+            font-size: 12px;
+            color: #6b7280;
+            margin-bottom: 5px;
+        }
+
+        .auth-group select, .auth-group input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .auth-group select:focus, .auth-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102,126,234,0.1);
+        }
+
+        .api-base {
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            padding: 12px 20px;
+            margin-bottom: 20px;
+            text-align: center;
+            color: white;
+            font-family: monospace;
+            font-size: 14px;
+            backdrop-filter: blur(5px);
+        }
+
+        .api-base input {
+            background: rgba(255,255,255,0.9);
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            width: 300px;
+            margin-left: 10px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.25);
+        }
+
+        .card h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .method {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .method.get { background: #10b981; color: white; }
+        .method.post { background: #3b82f6; color: white; }
+        .method.put { background: #f59e0b; color: white; }
+        .method.delete { background: #ef4444; color: white; }
+
+        .endpoint {
+            background: #f3f4f6;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            margin: 10px 0;
+            word-break: break-all;
+        }
+
+        .param-group {
+            margin: 15px 0;
+        }
+
+        .param-group label {
+            display: block;
+            font-size: 12px;
+            color: #6b7280;
+            margin-bottom: 5px;
+        }
+
+        .param-group input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            width: 100%;
+            transition: opacity 0.2s;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .response-section {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .response-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .response-header h3 {
+            color: #667eea;
+        }
+
+        .status {
+            font-family: monospace;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+
+        .status.success { background: #d1fae5; color: #065f46; }
+        .status.error { background: #fee2e2; color: #991b1b; }
+        .status.loading { background: #fef3c7; color: #92400e; }
+
+        .response-content {
+            background: #1e1e2e;
+            color: #e2e2e2;
+            padding: 15px;
+            border-radius: 10px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .clear-btn {
+            background: #6b7280;
+            width: auto;
+            padding: 5px 15px;
+            font-size: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            .auth-row {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📡 API Тестер</h1>
+        <div class="subtitle">GET-запросы к API устройств (с авторизацией)</div>
+
+        <!-- ПАНЕЛЬ АВТОРИЗАЦИИ - СЮДА ВСТАВЛЯТЬ API КЛЮЧ -->
+        <div class="auth-panel">
+            <h3>🔐 Авторизация API</h3>
+            <div class="auth-row">
+                <div class="auth-group">
+                    <label>Тип авторизации:</label>
+                    <select id="authType">
+                        <option value="none">Без авторизации</option>
+                        <option value="bearer">Bearer Token (JWT)</option>
+                        <option value="apiKey">API Key (X-API-Key)</option>
+                        <option value="basic">Basic Auth (логин:пароль)</option>
+                    </select>
+                </div>
+                <div class="auth-group" style="flex:2">
+                    <label>API Ключ / Токен / Логин:Пароль:</label>
+                    <input type="text" id="apiKey" placeholder="Вставьте сюда ваш API ключ или токен">
+                </div>
+            </div>
+            <div style="font-size: 12px; color: #6b7280; margin-top: 10px;">
+                💡 Примеры:<br>
+                • Bearer: <code>eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...</code><br>
+                • API Key: <code>abc123-def456-ghi789</code><br>
+                • Basic Auth: <code>логин:пароль</code> (введите в поле выше, например: admin:12345)
+            </div>
+        </div>
+
+        <div class="api-base">
+            🔗 Базовый URL API:
+            <input type="text" id="baseUrl" value="http://89.108.127.148:1488">
+        </div>
+
+        <div class="grid">
+            <!-- Карточки с запросами (те же, что и раньше) -->
+            <div class="card">
+                <h3><span class="method get">GET</span> Список устройств</h3>
+                <div class="endpoint">/devices</div>
+                <button onclick="sendGetRequest('/devices')">📋 Получить все устройства</button>
+            </div>
+
+            <div class="card">
+                <h3><span class="method get">GET</span> Устройство по ID</h3>
+                <div class="endpoint">/devices/{id}</div>
+                <div class="param-group">
+                    <label>ID устройства:</label>
+                    <input type="text" id="deviceId" placeholder="Например: 1">
+                </div>
+                <button onclick="sendGetRequest('/devices/' + document.getElementById('deviceId').value)">🔍 Получить устройство</button>
+            </div>
+
+            <div class="card">
+                <h3><span class="method get">GET</span> Полные данные</h3>
+                <div class="endpoint">/devices/full/{id}</div>
+                <div class="param-group">
+                    <label>ID устройства:</label>
+                    <input type="text" id="fullDeviceId" placeholder="Например: 1">
+                </div>
+                <button onclick="sendGetRequest('/devices/full/' + document.getElementById('fullDeviceId').value)">📊 Получить полные данные</button>
+            </div>
+
+            <div class="card">
+                <h3><span class="method get">GET</span> Поиск устройств</h3>
+                <div class="endpoint">/devices/search?query={текст}</div>
+                <div class="param-group">
+                    <label>Поисковый запрос:</label>
+                    <input type="text" id="searchQuery" placeholder="Номер, VIN или имя">
+                </div>
+                <button onclick="sendGetRequest('/devices/search?query=' + encodeURIComponent(document.getElementById('searchQuery').value))">🔎 Поиск</button>
+            </div>
+
+            <div class="card">
+                <h3><span class="method get">GET</span> Датчики</h3>
+                <div class="endpoint">/devices/{id}/sensors</div>
+                <div class="param-group">
+                    <label>ID устройства:</label>
+                    <input type="text" id="sensorDeviceId" placeholder="ID">
+                </div>
+                <button onclick="sendGetRequest('/devices/' + document.getElementById('sensorDeviceId').value + '/sensors')">📈 Датчики</button>
+            </div>
+
+            <div class="card">
+                <h3><span class="method get">GET</span> Статус сервера</h3>
+                <div class="endpoint">/server/status</div>
+                <button onclick="sendGetRequest('/server/status')">🖥️ Статус</button>
+            </div>
+        </div>
+
+        <!-- Блок ответа -->
+        <div class="response-section">
+            <div class="response-header">
+                <h3>📥 Ответ сервера</h3>
+                <button class="clear-btn" onclick="clearResponse()">Очистить</button>
+            </div>
+            <div id="responseStatus" class="status" style="margin-bottom: 10px;"></div>
+            <div id="responseContent" class="response-content">Нажмите на любую кнопку, чтобы отправить запрос...</div>
+        </div>
+    </div>
+
+    <script>
+        // Получить базовый URL
+        function getBaseUrl() {
+            let url = document.getElementById('baseUrl').value;
+            return url.replace(/\/$/, '');
+        }
+
+        // Получить заголовки авторизации
+        function getAuthHeaders() {
+            const authType = document.getElementById('authType').value;
+            const apiKey = document.getElementById('apiKey').value;
+            const headers = { 'Accept': 'application/json' };
+
+            if (authType === 'bearer' && apiKey) {
+                headers['Authorization'] = `Bearer ${apiKey}`;
+            } else if (authType === 'apiKey' && apiKey) {
+                headers['X-API-Key'] = apiKey;
+            } else if (authType === 'basic' && apiKey) {
+                // Для basic ожидается формат "логин:пароль"
+                const encoded = btoa(apiKey);
+                headers['Authorization'] = `Basic ${encoded}`;
+            }
+
+            return headers;
+        }
+
+        // Отправить GET-запрос
+        async function sendGetRequest(endpoint) {
+            const baseUrl = getBaseUrl();
+            const fullUrl = baseUrl + endpoint;
+            const headers = getAuthHeaders();
+            
+            const statusDiv = document.getElementById('responseStatus');
+            const contentDiv = document.getElementById('responseContent');
+            
+            statusDiv.className = 'status loading';
+            statusDiv.textContent = '⏳ Отправка запроса...';
+            contentDiv.textContent = 'Загрузка...';
+            
+            try {
+                const response = await fetch(fullUrl, {
+                    method: 'GET',
+                    headers: headers,
+                    mode: 'cors'
+                });
+                
+                if (response.ok) {
+                    statusDiv.className = 'status success';
+                    statusDiv.textContent = `✅ Успешно (${response.status} ${response.statusText})`;
+                } else {
+                    statusDiv.className = 'status error';
+                    statusDiv.textContent = `❌ Ошибка (${response.status} ${response.statusText})`;
+                }
+                
+                const text = await response.text();
+                try {
+                    const json = JSON.parse(text);
+                    contentDiv.textContent = JSON.stringify(json, null, 2);
+                } catch {
+                    contentDiv.textContent = text || '(пустой ответ)';
+                }
+                
+                contentDiv.textContent = `📍 ${fullUrl}\n\n🔐 Тип авторизации: ${document.getElementById('authType').value}\n\n` + contentDiv.textContent;
+                
+            } catch (error) {
+                statusDiv.className = 'status error';
+                statusDiv.textContent = '❌ Ошибка соединения';
+                contentDiv.textContent = `❌ Ошибка: ${error.message}\n\n📍 ${fullUrl}\n\nПроверьте:\n• Правильно ли введён API ключ\n• Правильный ли тип авторизации выбран\n• Доступен ли сервер API`;
+            }
+        }
+        
+        function clearResponse() {
+            document.getElementById('responseStatus').className = '';
+            document.getElementById('responseStatus').textContent = '';
+            document.getElementById('responseContent').textContent = 'Нажмите на любую кнопку, чтобы отправить запрос...';
+        }
+    </script>
+</body>
+</html>
