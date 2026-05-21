@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>API Тестер - с авторизацией</title>
+    <title>API Тестер - Wialon Fleet</title>
     <style>
         * {
             margin: 0;
@@ -88,26 +88,16 @@
             box-shadow: 0 0 0 2px rgba(102,126,234,0.1);
         }
 
-        .api-base {
-            background: rgba(255,255,255,0.2);
+        .api-info {
+            background: rgba(102,126,234,0.15);
             border-radius: 10px;
-            padding: 12px 20px;
+            padding: 10px 15px;
             margin-bottom: 20px;
             text-align: center;
             color: white;
             font-family: monospace;
             font-size: 14px;
             backdrop-filter: blur(5px);
-        }
-
-        .api-base input {
-            background: rgba(255,255,255,0.9);
-            border: none;
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-family: monospace;
-            width: 300px;
-            margin-left: 10px;
         }
 
         .grid {
@@ -263,10 +253,10 @@
 </head>
 <body>
     <div class="container">
-        <h1>📡 API Тестер</h1>
-        <div class="subtitle">GET-запросы к API устройств (с авторизацией)</div>
+        <h1>📡 Wialon Fleet API Тестер</h1>
+        <div class="subtitle">GET-запросы к API устройств</div>
 
-        <!-- ПАНЕЛЬ АВТОРИЗАЦИИ - СЮДА ВСТАВЛЯТЬ API КЛЮЧ -->
+        <!-- Панель авторизации -->
         <div class="auth-panel">
             <h3>🔐 Авторизация API</h3>
             <div class="auth-row">
@@ -292,19 +282,20 @@
             </div>
         </div>
 
-        <div class="api-base">
-            🔗 Базовый URL API:
-            <input type="text" id="baseUrl" value="http://89.108.127.148:1488">
+        <!-- Информация о базовом URL (фиксированный, без возможности редактирования) -->
+        <div class="api-info">
+            🌐 API Endpoint: <strong>https://wiafleet.online/api</strong>
         </div>
 
         <div class="grid">
-            <!-- Карточки с запросами (те же, что и раньше) -->
+            <!-- Карточка 1: Список устройств -->
             <div class="card">
                 <h3><span class="method get">GET</span> Список устройств</h3>
                 <div class="endpoint">/devices</div>
                 <button onclick="sendGetRequest('/devices')">📋 Получить все устройства</button>
             </div>
 
+            <!-- Карточка 2: Устройство по ID -->
             <div class="card">
                 <h3><span class="method get">GET</span> Устройство по ID</h3>
                 <div class="endpoint">/devices/{id}</div>
@@ -315,6 +306,7 @@
                 <button onclick="sendGetRequest('/devices/' + document.getElementById('deviceId').value)">🔍 Получить устройство</button>
             </div>
 
+            <!-- Карточка 3: Полные данные устройства -->
             <div class="card">
                 <h3><span class="method get">GET</span> Полные данные</h3>
                 <div class="endpoint">/devices/full/{id}</div>
@@ -325,30 +317,91 @@
                 <button onclick="sendGetRequest('/devices/full/' + document.getElementById('fullDeviceId').value)">📊 Получить полные данные</button>
             </div>
 
+            <!-- Карточка 4: Поиск устройств -->
             <div class="card">
                 <h3><span class="method get">GET</span> Поиск устройств</h3>
                 <div class="endpoint">/devices/search?query={текст}</div>
                 <div class="param-group">
-                    <label>Поисковый запрос:</label>
-                    <input type="text" id="searchQuery" placeholder="Номер, VIN или имя">
+                    <label>Поисковый запрос (номер, VIN, имя):</label>
+                    <input type="text" id="searchQuery" placeholder="Например: A123BC или VIN...">
                 </div>
                 <button onclick="sendGetRequest('/devices/search?query=' + encodeURIComponent(document.getElementById('searchQuery').value))">🔎 Поиск</button>
             </div>
 
+            <!-- Карточка 5: Датчики устройства -->
             <div class="card">
-                <h3><span class="method get">GET</span> Датчики</h3>
+                <h3><span class="method get">GET</span> Датчики устройства</h3>
                 <div class="endpoint">/devices/{id}/sensors</div>
                 <div class="param-group">
                     <label>ID устройства:</label>
-                    <input type="text" id="sensorDeviceId" placeholder="ID">
+                    <input type="text" id="sensorDeviceId" placeholder="Например: 1">
                 </div>
-                <button onclick="sendGetRequest('/devices/' + document.getElementById('sensorDeviceId').value + '/sensors')">📈 Датчики</button>
+                <button onclick="sendGetRequest('/devices/' + document.getElementById('sensorDeviceId').value + '/sensors')">📈 Получить датчики</button>
             </div>
 
+            <!-- Карточка 6: Правила (алерты) устройства -->
+            <div class="card">
+                <h3><span class="method get">GET</span> Правила устройства</h3>
+                <div class="endpoint">/devices/{id}/rules</div>
+                <div class="param-group">
+                    <label>ID устройства:</label>
+                    <input type="text" id="rulesDeviceId" placeholder="Например: 1">
+                </div>
+                <button onclick="sendGetRequest('/devices/' + document.getElementById('rulesDeviceId').value + '/rules')">⚙️ Получить правила</button>
+            </div>
+
+            <!-- Карточка 7: Счётчики (пробег, моточасы) -->
+            <div class="card">
+                <h3><span class="method get">GET</span> Счётчики устройства</h3>
+                <div class="endpoint">/devices/{id}/accumulators</div>
+                <div class="param-group">
+                    <label>ID устройства:</label>
+                    <input type="text" id="accumDeviceId" placeholder="Например: 1">
+                </div>
+                <button onclick="sendGetRequest('/devices/' + document.getElementById('accumDeviceId').value + '/accumulators')">📊 Получить счётчики</button>
+            </div>
+
+            <!-- Карточка 8: Группы устройств -->
+            <div class="card">
+                <h3><span class="method get">GET</span> Группы устройств</h3>
+                <div class="endpoint">/devices/groups</div>
+                <button onclick="sendGetRequest('/devices/groups')">👥 Получить группы</button>
+            </div>
+
+            <!-- Карточка 9: Корзина (удалённые) -->
+            <div class="card">
+                <h3><span class="method get">GET</span> Корзина</h3>
+                <div class="endpoint">/devices/trash</div>
+                <button onclick="sendGetRequest('/devices/trash')">🗑️ Показать удалённые</button>
+            </div>
+
+            <!-- Карточка 10: Атрибуты устройства -->
+            <div class="card">
+                <h3><span class="method get">GET</span> Атрибуты устройства</h3>
+                <div class="endpoint">/devices/{id}/attribute</div>
+                <div class="param-group">
+                    <label>ID устройства:</label>
+                    <input type="text" id="attrDeviceId" placeholder="Например: 1">
+                </div>
+                <button onclick="sendGetRequest('/devices/' + document.getElementById('attrDeviceId').value + '/attribute')">🏷️ Получить атрибуты</button>
+            </div>
+
+            <!-- Карточка 11: Пользовательские поля -->
+            <div class="card">
+                <h3><span class="method get">GET</span> Пользовательские поля</h3>
+                <div class="endpoint">/devices/{id}/custom_fields</div>
+                <div class="param-group">
+                    <label>ID устройства:</label>
+                    <input type="text" id="customDeviceId" placeholder="Например: 1">
+                </div>
+                <button onclick="sendGetRequest('/devices/' + document.getElementById('customDeviceId').value + '/custom_fields')">📝 Получить кастомные поля</button>
+            </div>
+
+            <!-- Карточка 12: Статус сервера -->
             <div class="card">
                 <h3><span class="method get">GET</span> Статус сервера</h3>
                 <div class="endpoint">/server/status</div>
-                <button onclick="sendGetRequest('/server/status')">🖥️ Статус</button>
+                <button onclick="sendGetRequest('/server/status')">🖥️ Проверить статус</button>
             </div>
         </div>
 
@@ -364,11 +417,8 @@
     </div>
 
     <script>
-        // Получить базовый URL
-        function getBaseUrl() {
-            let url = document.getElementById('baseUrl').value;
-            return url.replace(/\/$/, '');
-        }
+        // ФИКСИРОВАННЫЙ БАЗОВЫЙ URL (удалён)
+        const BASE_URL = 'https://wiafleet.online/api';
 
         // Получить заголовки авторизации
         function getAuthHeaders() {
@@ -391,8 +441,7 @@
 
         // Отправить GET-запрос
         async function sendGetRequest(endpoint) {
-            const baseUrl = getBaseUrl();
-            const fullUrl = baseUrl + endpoint;
+            const fullUrl = BASE_URL + endpoint;
             const headers = getAuthHeaders();
             
             const statusDiv = document.getElementById('responseStatus');
@@ -403,6 +452,9 @@
             contentDiv.textContent = 'Загрузка...';
             
             try {
+                console.log(`Отправка GET запроса на: ${fullUrl}`);
+                console.log('Заголовки:', headers);
+                
                 const response = await fetch(fullUrl, {
                     method: 'GET',
                     headers: headers,
@@ -425,20 +477,27 @@
                     contentDiv.textContent = text || '(пустой ответ)';
                 }
                 
-                contentDiv.textContent = `📍 ${fullUrl}\n\n🔐 Тип авторизации: ${document.getElementById('authType').value}\n\n` + contentDiv.textContent;
+                // Добавляем информацию об URL и типе авторизации
+                const authTypeText = document.getElementById('authType').value;
+                contentDiv.textContent = `📍 ${fullUrl}\n\n🔐 Тип авторизации: ${authTypeText === 'none' ? 'без авторизации' : authTypeText}\n\n` + contentDiv.textContent;
                 
             } catch (error) {
+                console.error('Ошибка запроса:', error);
                 statusDiv.className = 'status error';
                 statusDiv.textContent = '❌ Ошибка соединения';
-                contentDiv.textContent = `❌ Ошибка: ${error.message}\n\n📍 ${fullUrl}\n\nПроверьте:\n• Правильно ли введён API ключ\n• Правильный ли тип авторизации выбран\n• Доступен ли сервер API`;
+                contentDiv.textContent = `❌ Не удалось выполнить запрос:\n\n📍 ${fullUrl}\n\nОшибка: ${error.message}\n\nВозможные причины:\n• API не отвечает (сервер выключен или недоступен)\n• CORS политика блокирует запрос\n• Неверный тип авторизации или ключ\n\n💡 Подсказка: Откройте консоль разработчика (F12) для деталей`;
             }
         }
         
         function clearResponse() {
-            document.getElementById('responseStatus').className = '';
-            document.getElementById('responseStatus').textContent = '';
-            document.getElementById('responseContent').textContent = 'Нажмите на любую кнопку, чтобы отправить запрос...';
+            const statusDiv = document.getElementById('responseStatus');
+            const contentDiv = document.getElementById('responseContent');
+            statusDiv.className = '';
+            statusDiv.textContent = '';
+            contentDiv.textContent = 'Нажмите на любую кнопку, чтобы отправить запрос...';
         }
+        
+        console.log('API Тестер загружен. Базовый URL:', BASE_URL);
     </script>
 </body>
 </html>
